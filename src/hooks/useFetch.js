@@ -6,8 +6,9 @@ const BASE_URL = "https://api.themoviedb.org/3";
 
 const useFetch = () => {
   const [movies, setMovies] = useState([]);
-  const [loading, setLoading] = useState(true); // Opcjonalnie: śledzenie ładowania
-  const [error, setError] = useState(null); // Opcjonalnie: śledzenie błędów
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
     let ignore = false;
     const fetchingMovies = async () => {
@@ -29,33 +30,63 @@ const useFetch = () => {
 
         const data = await response.json();
         setMovies(data.results);
-        console.log(movies);
-
-        if (!ignore) {
-          const mappedMovies = data.results.map((movie) => ({
-            id: movie.id,
-            title: movie.title,
-            image: `https://image.tmdb.org/t/p/w500${movie.poster_path}`, // Construct image URL
-            //year: movie.release_date ? movie.release_date.substring(0, 4) : "Unknown", // Extract year
-            year: movie.release_date || "Unknown",
-            rating: movie.vote_average || "N/A", // Use vote_average as rating
-            description: movie.overview || "No description available.", // Use overview as description
-          }));
-        }
       } catch (error) {
         console.error("Error fetching movies:", error);
         setError(error.message);
-        return; // Return an empty array in case of error
+        setMovies([]);
       } finally {
         if (!ignore) setLoading(false);
       }
     };
+
     fetchingMovies();
     return () => {
       ignore = true;
     };
   }, []);
+
   return { movies, loading, error };
 };
 
-export { useFetch };
+const useFetchMovie = (movieId) => {
+  const [movie, setMovie] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchMovie = async () => {
+      if (!movieId) return;
+
+      try {
+        setLoading(true);
+        const response = await fetch(
+          `${BASE_URL}/movie/${movieId}?language=en-US`,
+          {
+            headers: {
+              Authorization: `Bearer ${API_READ_ACCESS_TOKEN}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setMovie(data);
+      } catch (error) {
+        console.error("Error fetching movie:", error);
+        setError(error.message);
+        setMovie(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMovie();
+  }, [movieId]);
+
+  return { movie, loading, error };
+};
+export { useFetch, useFetchMovie };

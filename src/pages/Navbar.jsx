@@ -18,11 +18,11 @@ const Navbar = () => {
               Popular
             </Link>
           </li>
-          <li>
+          {/* <li>
             <Link to="/journal" className="hover:text-fuchsia-400">
               Favorites
             </Link>
-          </li>
+          </li> */}
         </ul>
         <div id="burger" className="block w-[25px] md:hidden">
           <img src="./img/burger-bar.png" alt="burger menu" />
